@@ -346,11 +346,13 @@ class Strategy:
             best_angle = aux.get_angle_between_points(angle_point, field.ball.get_pos(), best_point)
             min_tan = aux.get_tangent_points(best_point, field.ball.get_pos(), const.ROBOT_R * 2)
             enemy_angles_local = []
+            min_en = None
             if len(min_tan) > 1:
                 min_en = abs(aux.get_angle_between_points(min_tan[0], field.ball.get_pos(), min_tan[1]))
-            for pos in enemy_poses:
-                if pos[1][1] - pos[1][0] - const.DELTA_ANGLE > min_en and aux.dist(pos[0], best_point) > const.ROBOT_R * 2:
-                    enemy_angles_local.append(pos[1])
+            if min_en:
+                for pos in enemy_poses:
+                    if pos[1][1] - pos[1][0] - const.DELTA_ANGLE > min_en and aux.dist(pos[0], best_point) > const.ROBOT_R * 2:
+                        enemy_angles_local.append(pos[1])
             enemy_angles_local = aux.range_plus(enemy_angles_local)
             for ang in enemy_angles_local:
                 if aux.is_in_range(best_angle, ang):
