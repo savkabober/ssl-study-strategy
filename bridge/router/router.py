@@ -146,7 +146,6 @@ class Router:
                     )
 
             pth_wp = self.calc_passthrough_wp(field, idx)
-            # print(pth_wp)
             if pth_wp is not None:
                 is_inside = False
                 for goal in [field.ally_goal, field.enemy_goal]:
@@ -161,7 +160,6 @@ class Router:
         просчитать путь до конечной точки, учитывая объекты на поле
         """
         p_to_go = self.routes[idx].get_next_wp().pos
-        # print(p_to_go.x, p_to_go.y)
         start_p = PointTree(field.allies[idx].get_pos().x, field.allies[idx].get_pos().y)
         end_p = PointTree(p_to_go.x, p_to_go.y)
         all_robots: list[entity.Entity | rbt.Robot] = []
@@ -206,36 +204,24 @@ class Router:
                 if end_p.father:
                     old_way_l = 0.0
                     point_mas = end_p
-                    # print("start")
                     while point_mas.father is not None:
-                        # print(point_mas.x, point_mas.y)
                         old_way_l += aux.dist(point_mas.point(), point_mas.father.point())
                         point_mas = point_mas.father
-                        # if idx == 1:
-                        #     field.image.draw_dot(point_mas.point(), (int(255 * (idx + 1) / 3), 0, 0), 50)
                     new_way_l = aux.dist(end_p.point(), queue[n_steps].point())
                     point_mas = queue[n_steps]
-                    # if idx == 1:
-                    #     field.image.draw_dot(point_mas.point(), (int(255 * (idx + 1) / 3), 0, 0), 50)
                     while point_mas.father is not None:
                         new_way_l += aux.dist(point_mas.point(), point_mas.father.point())
                         point_mas = point_mas.father
-                        # if idx == 1:
-                        #     field.image.draw_dot(point_mas.point(), (int(255 * (idx + 1) / 3), 0, 0), 50)
                     if old_way_l < new_way_l:
                         flag = 0
                 if flag:
                     end_p.father = queue[n_steps]
-                    # print("start")
-                    # print(end_p.x, end_p.y)
                     point_mas = end_p
                     finish = True
                     if point_mas.father is not None:
                         while point_mas.father.father is not None:
-                            # print(point_mas.x, point_mas.y)
                             finish = False
                             point_mas = point_mas.father
-                        # print(point_mas.x, point_mas.y)
                     point_go_now = point_mas
                     if n_max == float("inf"):
                         n_max = n_steps + 10
@@ -294,10 +280,7 @@ class Router:
                         )
                     )
             n_steps += 1
-        # if idx == 0:
-        #     print(point_go_now.x, point_go_now.y)
         if idx >= 0 and idx <= 2:
-            # print('imhere')
             point_mas = end_p
             while point_mas.father is not None:
                 field.image.draw_dot(point_mas.point(), (int(255 * (idx + 1) / 3), 0, 0), 50)

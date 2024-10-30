@@ -32,7 +32,9 @@ DELTA_ANGLE = 0.20
 BALL_VEL = 4500
 ROBOT_VEL = 1000
 TRUE_ANGLE = 0.15
+K_PASS = [1, 0, 0, 0]
 # Примерные скорости робота и мяча для расчета погрешности
+DEFENSE_TIME = 0.5
 
 CAMERAS_COUNT: int = 4
 MAX_BALLS_IN_CAMERA: int = 64
