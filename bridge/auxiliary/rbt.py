@@ -56,9 +56,9 @@ class Robot(entity.Entity):
 
         # v! REAL
         else:
-            self.k_xx = -250 / 20
-            self.k_yy = 0.5 * 250 / 20
-            self.k_ww = 6 / 20
+            self.k_xx = -10
+            self.k_yy = 10
+            self.k_ww = 0.08
             self.k_wy = 0
             self.t_wy = 0.15
             self.r_comp_f_dy = tau.FOD(self.t_wy, const.Ts)
@@ -75,19 +75,19 @@ class Robot(entity.Entity):
         # self.a0Flp = tau.FOLP(self.a0TF, const.Ts)
 
         # !v REAL
-        gains_full = [3, 0.2, 0, const.MAX_SPEED]
-        gains_soft = [3, 0.35, 0.1, const.SOFT_MAX_SPEED]
+        gains_full = [6, 0.2, 0, const.MAX_SPEED]
+        gains_soft = [5, 0.35, 0.1, const.SOFT_MAX_SPEED]
         a_gains_full = [8, 0.1, 0, const.MAX_SPEED_R]
         if self.r_id < 9:
-            gains_full = [3, 0.18, 0, const.MAX_SPEED]
-            gains_soft = [3, 0.18, 0.1, const.SOFT_MAX_SPEED]
-            a_gains_full = [20, 0, 0, const.MAX_SPEED_R]
+            gains_full = [10, 0.1, 0, const.MAX_SPEED]
+            gains_soft = [12, 0.18, 0.1, const.SOFT_MAX_SPEED]
+            a_gains_full = [3, 0, 0, const.MAX_SPEED_R]
         # gains_soft = [10, 0.32, 0, const.SOFT_MAX_SPEED]
         # gains_soft = gains_full
         if const.IS_SIMULATOR_USED:
             # gains_full = [8, 0.35, 0, const.MAX_SPEED]
-            gains_full = [25, 0.08, 0, const.MAX_SPEED]
-            gains_soft = [25, 0.08, 0, const.SOFT_MAX_SPEED]
+            gains_full = [15, 0.08, 0, const.MAX_SPEED]
+            gains_soft = [15, 0.08, 0, const.SOFT_MAX_SPEED]
             a_gains_full = [2, 0.1, 0.1, const.MAX_SPEED_R]  # 4, 0.1, 0.1
         # a_gains_soft = [4, 0.07, 8, const.SOFT_MAX_SPEED_R]
         a_gains_soft = a_gains_full
@@ -130,7 +130,7 @@ class Robot(entity.Entity):
     def __eq__(self, robo: typing.Any) -> bool:
         try:
             return self.r_id == robo.r_id and self.color == robo.color
-        except:
+        except AttributeError:
             return False
 
     def to_entity(self) -> entity.Entity:
@@ -240,6 +240,8 @@ class Robot(entity.Entity):
         )
         is_aligned = is_dist and is_angle and is_offset
 
+        # print("is aligned:", is_dist, is_angle, is_offset)
+
         if is_aligned:
             self.is_kick_committed = True
         else:
@@ -263,6 +265,7 @@ class Robot(entity.Entity):
         """
         self.speed_x = self.xx_flp.process(1 / self.k_xx * aux.rotate(vel, -self._angle).x)
         self.speed_y = self.yy_flp.process(1 / self.k_yy * aux.rotate(vel, -self._angle).y)
+        # print(vel.mag(), aux.Point(self.speed_x, self.speed_y).mag())
 
         # self.speed_x = self.xx_flp.process(1 / self.k_xx * vel.x)
         # self.speed_y = self.yy_flp.process(1 / self.k_yy * vel.y)

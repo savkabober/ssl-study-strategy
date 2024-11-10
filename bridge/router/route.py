@@ -182,7 +182,7 @@ class Route:
                 wp.WType.S_BALL_GO,
                 wp.WType.S_BALL_PASS,
             ]
-        ) and dist < 300:
+        ) and dist < 750:
             rbt.pos_reg_x.select_mode(tau.Mode.SOFT)
             rbt.pos_reg_y.select_mode(tau.Mode.SOFT)
 
@@ -216,7 +216,7 @@ class Route:
             # angle0 = end_point.angle
             angle0 = rbt.get_angle()
 
-            transl_vel = vel0 * 800
+            transl_vel = vel0 * 300
 
             # if end_point.type == wp.WType.S_BALL_GRAB:
             #     transl_vel = vel0 * 200
@@ -233,7 +233,10 @@ class Route:
 
             if target_point.type == wp.WType.R_PASSTHROUGH:
                 transl_vel = -vec_err.unity() * const.MAX_SPEED  # TODO: change speed by dist to final point
-
+            if(target_point.type == wp.WType.S_SLOWDOWN):
+                if(transl_vel.mag()>=const.MAX_STOP_SPEED):
+                    transl_vel = transl_vel.unity()*const.MAX_STOP_SPEED
+                    
         aerr = aux.wind_down_angle(angle0 - rbt.get_angle())
 
         ang_vel = rbt.angle_reg.process(aerr, -rbt.get_anglevel())
@@ -257,11 +260,12 @@ class Route:
         if (end_point.type in [wp.WType.S_BALL_KICK, wp.WType.S_BALL_PASS]) and rbt.is_kick_aligned_by_angle(
             end_point.angle
         ):
-            rbt.auto_kick_ = 1
-            # if rbt.r_id < 9:
-            #     rbt.auto_kick_ = 2
+            if const.IS_SIMULATOR_USED:
+                rbt.auto_kick_ = 1
+            else:
+                rbt.auto_kick_ = 2
         elif end_point.type == wp.WType.S_BALL_KICK_UP and rbt.is_kick_aligned_by_angle(end_point.angle):
-            rbt.auto_kick_ = 2
+            rbt.auto_kick_ = 1
         else:
             rbt.auto_kick_ = 0
 

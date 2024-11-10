@@ -1,3 +1,4 @@
+"""код состояний игры"""
 import bridge.const as const
 import bridge.router.waypoint as wp
 from bridge.auxiliary import aux, fld
@@ -64,7 +65,7 @@ def prepare_penalty(field: fld.Field, waypoints: list[wp.Waypoint], we_active: b
     for robot_id in stopped_robots:
         robot_pos = field.allies[robot_id].get_pos()
         best_pos = None
-        min_dist: float
+        min_dist: float = 0
         for pos in enumerate(poses):
             dist = aux.dist(pos[1], robot_pos)
             if best_pos is None or dist < min_dist:
@@ -85,11 +86,12 @@ def prepare_penalty(field: fld.Field, waypoints: list[wp.Waypoint], we_active: b
         aux.angle_to_point(field.ally_goal.center, field.ball.get_pos()),
         wp.WType.S_ENDPOINT,
     )
-    print(field.ally_goal.center + field.ally_goal.eye_forw * const.ROBOT_R)
+    # print(field.ally_goal.center + field.ally_goal.eye_forw * const.ROBOT_R)
 
 
 def prepare_kickoff(field: fld.Field, waypoints: list[wp.Waypoint], we_active: bool) -> None:
     """Настройка перед состоянием kickoff по команде судей"""
+    poses = []
     if we_active:
         if const.DIV == "B":
             poses = [
@@ -122,7 +124,7 @@ def prepare_kickoff(field: fld.Field, waypoints: list[wp.Waypoint], we_active: b
         if field.allies[i].is_used() and field.allies[i].r_id != field.gk_id:
             robot_pos = field.allies[i].get_pos()
             best_pos = None
-            min_dist: float
+            min_dist: float = 0
             for pos in enumerate(poses):
                 dist = aux.dist(pos[1], robot_pos)
                 if best_pos is None or dist < min_dist:
