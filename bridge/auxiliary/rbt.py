@@ -46,8 +46,8 @@ class Robot(entity.Entity):
 
         # v! SIM
         if const.IS_SIMULATOR_USED:
-            self.k_xx = -833 / 20
-            self.k_yy = 833 / 20
+            self.k_xx = -833 / 100
+            self.k_yy = 833 / 100
             self.k_ww = 1.25 / 20
             self.k_wy = -0.001
             self.t_wy = 0.15
@@ -56,8 +56,8 @@ class Robot(entity.Entity):
 
         # v! REAL
         else:
-            self.k_xx = -10
-            self.k_yy = 10
+            self.k_xx = -2.7
+            self.k_yy = 2.7
             self.k_ww = 0.08
             self.k_wy = 0
             self.t_wy = 0.15
@@ -79,15 +79,16 @@ class Robot(entity.Entity):
         gains_soft = [5, 0.35, 0.1, const.SOFT_MAX_SPEED]
         a_gains_full = [8, 0.1, 0, const.MAX_SPEED_R]
         if self.r_id < 9:
-            gains_full = [10, 0.1, 0, const.MAX_SPEED]
-            gains_soft = [12, 0.18, 0.1, const.SOFT_MAX_SPEED]
-            a_gains_full = [3, 0, 0, const.MAX_SPEED_R]
+
+            gains_full = [1, 0, 0, const.MAX_SPEED]
+            gains_soft = [1, 0, 0, const.SOFT_MAX_SPEED]
+            a_gains_full = [1.5, 0, 0, const.MAX_SPEED_R]
         # gains_soft = [10, 0.32, 0, const.SOFT_MAX_SPEED]
         # gains_soft = gains_full
         if const.IS_SIMULATOR_USED:
             # gains_full = [8, 0.35, 0, const.MAX_SPEED]
-            gains_full = [15, 0.08, 0, const.MAX_SPEED]
-            gains_soft = [15, 0.08, 0, const.SOFT_MAX_SPEED]
+            gains_full = [5, 0.08, 0, const.MAX_SPEED]
+            gains_soft = [5, 0.08, 0, const.SOFT_MAX_SPEED]
             a_gains_full = [2, 0.1, 0.1, const.MAX_SPEED_R]  # 4, 0.1, 0.1
         # a_gains_soft = [4, 0.07, 8, const.SOFT_MAX_SPEED_R]
         a_gains_soft = a_gains_full

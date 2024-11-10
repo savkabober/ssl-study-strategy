@@ -17,22 +17,22 @@ class Color(Enum):
 # GAME SETTING CONSTS
 DIV = "C"
 COLOR = Color.BLUE
-POLARITY = -1  # -1 если ворота синих на +x; 1 если ворота синих на -x
+POLARITY = 1  # -1 если ворота синих на +x; 1 если ворота синих на -x
 
-IS_SIMULATOR_USED = False
+IS_SIMULATOR_USED = True
 IS_DRIBBLER_USED = False  # dribbler and upper_kick
 SELF_PLAY = False
 
-GK = 1
+GK = 0
 PENALTY_KICKER = 1
-ENEMY_GK = 10
+ENEMY_GK = 0
 
-DELTA_ANGLE = 0.20
+DELTA_ANGLE = 0.2
 # погрешность кикера
-BALL_VEL = 4500
-ROBOT_VEL = 1000
+K_VEL = 1
 TRUE_ANGLE = 0.15
-K_PASS = [1, 0, 0, 0]
+K_PASS = [8, 350, 0.001, 0.002]
+PASS_PS = [45, 30, 6]
 # Примерные скорости робота и мяча для расчета погрешности
 DEFENSE_TIME = 0.5
 
@@ -47,6 +47,8 @@ SINGLE_ROBOT_PACKET_SIZE = 5
 ROBOT_TEAM_PACKET_SIZE: int = SINGLE_ROBOT_PACKET_SIZE * TEAM_ROBOTS_MAX_COUNT
 
 GEOMETRY_PACKET_SIZE: int = 2
+
+SENDING_ACTION_POINTS = 6
 
 CONTROL_MAPPING: dict[int, int] = {
     0: 0,
@@ -77,6 +79,7 @@ for i in range(TEAM_ROBOTS_MAX_COUNT):
 TOPIC_SINK = "control-sink"
 FIELD_TOPIC = "field-topic"
 IMAGE_TOPIC = "image-topic"
+POINTS_TOPIC = "points-topic"
 ##################################################
 
 ##################################################
@@ -88,12 +91,14 @@ Ts = 0.05  # s
 # MAX_SPEED_R = 50
 # ACCELERATION = 3
 # BASE_KICKER_VOLTAGE = 7.0
-MAX_SPEED = 2500
+MAX_SPEED = 500
+MAX_STOP_SPEED = 500
 MAX_SPEED_R = 45
-SOFT_MAX_SPEED = 2500
+SOFT_MAX_SPEED = 250
 SOFT_MAX_SPEED_R = 16
 ACCELERATION = 3
 BASE_KICKER_VOLTAGE = 7.0
+DRAW = 0
 
 R_KP = 7
 R_KD = 0
@@ -106,6 +111,13 @@ GK_PEN_KICKOUT_SPEED = 500
 
 BALL_R = 30
 ROBOT_R = 100
+
+WALL_DIST = 50
+MIN_ENEMY_DIST = 50
+MIN_PASS_DIST = 1500
+NORM_PASS_DIST = 2000
+MIN_ACTION_DIST = 500
+
 GRAVEYARD_POS_X = -10000
 ACTION_DIST = 200
 LIE_DIST = 220
@@ -115,21 +127,22 @@ HALF_HEIGHT = 3000
 GOAL_PEN_DX = 1000
 GOAL_PEN_DY = 2000
 if DIV == "C":
-    GOAL_DX = 3000
+    GOAL_DX = 4500
     GOAL_DY = 800
     GOAL_PEN_DX = 500
     GOAL_PEN_DY = 1500
-    HALF_HEIGHT = 2000
-
+    HALF_HEIGHT = 3000
+DIAGONAL = 2 * (HALF_HEIGHT ** 2 + GOAL_DX ** 2) ** 0.5
 GK_FORW = 200 + ROBOT_R
 KICK_ALIGN_DIST = 150
 GRAB_ALIGN_DIST = 130
 KICK_ALIGN_DIST_MULT = 1.5
 KICK_ALIGN_ANGLE = 0.07
-KICK_ALIGN_OFFSET = 30
+KICK_ALIGN_OFFSET = 50
 BALL_GRABBED_DIST = 115
 BALL_GRABBED_ANGLE = 0.8
-SUMM_DELAY = 200
+SUMM_DELAY = 0.2
+FIX_KICK_DIST = 250
 
 # ROUTE CONSTS
 KEEP_BALL_DIST = 500 + ROBOT_R

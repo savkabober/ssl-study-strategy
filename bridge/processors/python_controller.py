@@ -34,6 +34,7 @@ class SSLController(BaseProcessor):
     referee_reader: DataReader = attr.ib(init=False)
     commands_sink_writer: DataWriter = attr.ib(init=False)
 
+
     dbg_game_status: strategy.GameStates = strategy.GameStates.TIMEOUT
     # dbg_state: strategy.States = strategy.States.DEBUG
 
@@ -52,6 +53,8 @@ class SSLController(BaseProcessor):
         self.referee_reader = DataReader(data_bus, config.REFEREE_COMMANDS_TOPIC)
         self.commands_sink_writer = DataWriter(data_bus, const.TOPIC_SINK, 20)
         self.image_writer = DataWriter(data_bus, const.IMAGE_TOPIC, 20)
+        self.points_topic = DataReader(data_bus, const.POINTS_TOPIC)
+
 
         self.field = fld.Field()
         self.router = router.Router(self.field)
@@ -66,6 +69,7 @@ class SSLController(BaseProcessor):
         self.wait_ball_moved_flag = False
         self.wait_ball_moved = aux.Point(0, 0)
         self.tmp = 0
+        self.pass_points: list[aux.Point] = []
 
     def get_last_referee_command(self) -> RefereeCommand:
         """
@@ -87,6 +91,15 @@ class SSLController(BaseProcessor):
                 self.field.reverse_field()
         else:
             print("No new field")
+
+    def read_pass_points(self) -> None:
+        """Прочитать точки для паса"""
+        points = self.points_topic.read_last()
+        if points is not None:
+            self.pass_points = points.content
+            # for point in points:
+            #     self.pass_points.append(point.content)
+        self.strategy.get_pass_points(self.pass_points)
 
     def draw_image(self) -> None:
         """Send commands to drawer processor"""
@@ -175,6 +188,7 @@ class SSLController(BaseProcessor):
         self.cur_time = time.time()
 
         self.read_vision()
+        self.read_pass_points()
         self.process_referee_cmd()
         self.control_loop()
 
