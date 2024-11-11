@@ -2,6 +2,7 @@
 Модуль описания структуры Field для хранения информации об объектах на поле (роботы и мяч)
 """
 
+from functools import reduce
 from math import cos, pi
 from typing import Optional
 
@@ -265,7 +266,7 @@ class Field:
         )
 
 
-def find_nearest_robot(point: aux.Point, team: list[rbt.Robot], avoid: Optional[list[int]] = None) -> rbt.Robot:
+def find_nearest_robot(point: aux.Point, team: list[rbt.Robot], avoid: Optional[list[rbt.Robot]] = None) -> rbt.Robot:
     """
     Найти ближайший робот из массива team к точке point, игнорируя точки avoid
     """
@@ -275,7 +276,7 @@ def find_nearest_robot(point: aux.Point, team: list[rbt.Robot], avoid: Optional[
     min_dist = 10e10
 
     for i, player in enumerate(team):
-        if player.r_id in avoid or not player.is_used():
+        if player in avoid or not player.is_used():
             continue
         if aux.dist(point, player.get_pos()) < min_dist:
             min_dist = aux.dist(point, player.get_pos())
@@ -331,3 +332,49 @@ def get_active_bots(team: list[rbt.Robot]) -> list[rbt.Robot]:
         if r.is_used():
             active_bots.append(r)
     return active_bots
+
+def gate_angle_size(main_p: aux.Point, field: Field, enemy_goal: bool = True, flag: bool = False) -> list:
+    """
+    функция, определяющая оптимальный угол для удара по воротам соперников из данной точки
+    """
+    if enemy_goal:
+        now_rbts = get_active_bots(field.enemies)
+        now_goal = field.enemy_goal
+    else:
+        now_rbts = exclude(get_active_bots(field.allies), [field.allies[const.GK]])
+        now_goal = field.ally_goal
+    angle_point = aux.closest_point_on_line(now_goal.up, now_goal.down, main_p, is_inf="L")
+    gates: list[list[float]] = sorted(
+        [
+            [
+                aux.get_angle_between_points(angle_point, main_p, now_goal.down),
+                aux.get_angle_between_points(angle_point, main_p, now_goal.up),
+            ]
+        ]
+    )
+    minuses = []
+    for now_rbt in now_rbts:
+        tangents = aux.get_tangent_points(now_rbt.get_pos(), main_p, const.ROBOT_R + const.BALL_R)
+        if len(tangents) > 1:
+            minus: list[float] = sorted(
+                [
+                    aux.get_angle_between_points(angle_point, main_p, tangents[0]),
+                    aux.get_angle_between_points(angle_point, main_p, tangents[1]),
+                ]
+            )
+            if minus[1] - minus[0] < pi:
+                minuses.append(minus)
+
+    gates = sorted(aux.range_minus(gates, minuses), key=lambda a: a[1] - a[0], reverse=True)
+    if not gates:
+        cick_angle = aux.get_angle_between_points(angle_point, main_p, now_goal.center)
+        gates = [[0, 0]]
+    else:
+        cick_angle = (gates[0][1] + gates[0][0]) / 2
+    cick_angle = aux.wind_down_angle(cick_angle + aux.angle_to_point(aux.Point(0, 0), now_goal.center))
+    summ_angle = reduce((lambda x, y: [x[0] + y[0], x[1] + y[1]]), gates)
+    if flag:
+        for gate in gates:
+            print(gate[1], gate[0], '', end='')
+        print(summ_angle[1], summ_angle[0])
+    return [cick_angle, gates[0][1] - gates[0][0], summ_angle[1] - summ_angle[0]]

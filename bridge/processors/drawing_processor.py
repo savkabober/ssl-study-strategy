@@ -55,45 +55,50 @@ class Drawer(BaseProcessor):
         external_image: drawing.Image = message_img.content
         field: fld.Field = message_fld.content
 
-        for rbt in field.allies:
-            if rbt.is_used():
-                external_image.draw_robot(rbt.get_pos(), rbt.get_angle())
-        for rbt in field.enemies:
-            if rbt.is_used():
-                external_image.draw_robot(rbt.get_pos(), rbt.get_angle(), (255, 255, 0))
+        sum_len = 0
+        for g in external_image.commands:
+            sum_len += len(g.dots)
+        # print(sum_len)
+        if sum_len > 60 or 1:
+            for rbt in field.allies:
+                if rbt.is_used():
+                    external_image.draw_robot(rbt.get_pos(), rbt.get_angle())
+            for rbt in field.enemies:
+                if rbt.is_used():
+                    external_image.draw_robot(rbt.get_pos(), rbt.get_angle(), (255, 255, 0))
 
-        external_image.draw_dot(field.ball.get_pos(), (255, 0, 0), const.BALL_R)
+            external_image.draw_dot(field.ball.get_pos(), (255, 0, 0), const.BALL_R)
 
-        for command in external_image.commands:
-            self.scale_dots(command)
-            self.complete_command(command)
+            for command in external_image.commands:
+                self.scale_dots(command)
+                self.complete_command(command)
 
-        pygame.display.flip()
-        pygame.event.get()
+            pygame.display.flip()
+            pygame.event.get()
 
-        self.draw_field()
-        for goal in [field.ally_goal, field.enemy_goal]:
-            new_dots = []
-            for dot in goal.hull:
-                new_dots.append(dot * self.scale + aux.Point(self.middle_x, self.middle_y))
+            self.draw_field()
+            for goal in [field.ally_goal, field.enemy_goal]:
+                new_dots = []
+                for dot in goal.hull:
+                    new_dots.append(dot * self.scale + aux.Point(self.middle_x, self.middle_y))
 
-            for i, _ in enumerate(new_dots):
+                for i, _ in enumerate(new_dots):
+                    pygame.draw.line(
+                        self.screen,
+                        (255, 255, 255),
+                        (new_dots[i - 1].x, new_dots[i - 1].y),
+                        (new_dots[i].x, new_dots[i].y),
+                        2,
+                    )
+                goal_up = goal.up * self.scale + aux.Point(self.middle_x, self.middle_y)
+                goal_down = goal.down * self.scale + aux.Point(self.middle_x, self.middle_y)
                 pygame.draw.line(
                     self.screen,
                     (255, 255, 255),
-                    (new_dots[i - 1].x, new_dots[i - 1].y),
-                    (new_dots[i].x, new_dots[i].y),
-                    2,
+                    (goal_up.x, goal_up.y),
+                    (goal_down.x, goal_down.y),
+                    10,
                 )
-            goal_up = goal.up * self.scale + aux.Point(self.middle_x, self.middle_y)
-            goal_down = goal.down * self.scale + aux.Point(self.middle_x, self.middle_y)
-            pygame.draw.line(
-                self.screen,
-                (255, 255, 255),
-                (goal_up.x, goal_up.y),
-                (goal_down.x, goal_down.y),
-                10,
-            )
 
     def draw_field(self) -> None:
         """

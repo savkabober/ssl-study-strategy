@@ -1,3 +1,4 @@
+"""код состояний игры"""
 import bridge.const as const
 import bridge.router.waypoint as wp
 from bridge.auxiliary import aux, fld
@@ -85,11 +86,12 @@ def prepare_penalty(field: fld.Field, waypoints: list[wp.Waypoint], we_active: b
         aux.angle_to_point(field.ally_goal.center, field.ball.get_pos()),
         wp.WType.S_ENDPOINT,
     )
-    print(field.ally_goal.center + field.ally_goal.eye_forw * const.ROBOT_R)
+    # print(field.ally_goal.center + field.ally_goal.eye_forw * const.ROBOT_R)
 
 
 def prepare_kickoff(field: fld.Field, waypoints: list[wp.Waypoint], we_active: bool) -> None:
     """Настройка перед состоянием kickoff по команде судей"""
+    poses = []
     if we_active:
         if const.DIV == "B":
             poses = [

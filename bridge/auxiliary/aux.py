@@ -94,14 +94,14 @@ def segment_poly_intersect(p1: Point, p2: Point, points: list[Point]) -> typing.
     return None
 
 
-def segments_poly_intersect(p1: Point, p2: Point, points: list[Point]) -> list:
+def segments_poly_intersect(p1: Point, p2: Point, points: list[Point], is_inf: str = "S") -> list[Point]:
     """
     Определить, пересекает ли прямая p1-p2 полигон points
     Вернуть массив точек
     """
     inters = []
     for i in range(-1, len(points) - 1):
-        inter = get_line_intersection(p1, p2, points[i], points[i + 1], "LS")
+        inter = get_line_intersection(p1, p2, points[i], points[i + 1], is_inf+"S")
         if inter is not None:
             inters.append(inter)
     return inters
@@ -465,16 +465,32 @@ def is_on_line(p1: Point, p2: Point, p: Point) -> float:
     )
 
 
-def closest_point_on_poly(p1: Point, p2: Point, points: list[Point]) -> list:
+def closest_point_on_poly(p1: Point, p2: Point, points: list[Point], is_inf: str="S") -> list[Point]:
     """
     возвращает ближайшую точку полигона к линии
     """
-    closest_p = segments_poly_intersect(p1, p2, points)
+    closest_p = segments_poly_intersect(p1, p2, points, is_inf)
+    base_p = None
     if not closest_p:
         closest_p = [points[0]]
-        for i in range(1, len(points)):
-            if dist2line(p1, p2, points[i]) < dist2line(p1, p2, closest_p[0]):
-                closest_p[0] = points[i]
+        for i in points:
+            if dist(closest_point_on_line(p1, p2, i, is_inf), i) < dist(closest_point_on_line(p1, p2, closest_p[0], is_inf), closest_p[0]):
+                closest_p[0] = i
+        se_ps = []
+        if is_inf != "L":
+            se_ps.append(p1)
+        if is_inf == "S":
+            se_ps.append(p2)
+        for k in se_ps:
+            for j, _ in enumerate(points):
+                if not base_p:
+                    if dist(closest_point_on_line(points[j-1], _, k), k) < dist(closest_point_on_line(p1, p2, closest_p[0], is_inf), closest_p[0]):
+                        closest_p[0] = closest_point_on_line(points[j-1], _, k)
+                        base_p = k
+                else:
+                    if dist(closest_point_on_line(points[j-1], _, k), k) < dist(base_p, closest_p[0]):
+                        closest_p[0] = closest_point_on_line(points[j-1], _, k)
+                        base_p = k
     return closest_p
 
 
