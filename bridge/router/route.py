@@ -151,6 +151,12 @@ class Route:
 
         vec_err = target_point.pos - rbt.get_pos()
 
+        if 0 <= rbt.r_id <= 2:
+            field.image.draw_dot(target_point.pos, (100 * rbt.r_id, 100 * rbt.r_id, 100 * rbt.r_id), 120 - 10 *  rbt.r_id)
+            # print(target_point)
+            # if rbt.r_id == 1:
+            #     print(target_point.pos, vec_err)
+
         # #   NOTE: kostil!!!!!!!
         # if (dist > 1500):
         #     end_point.angle = aux.angle_to_point(rbt.get_pos(), end_point.pos)
@@ -182,7 +188,7 @@ class Route:
                 wp.WType.S_BALL_GO,
                 wp.WType.S_BALL_PASS,
             ]
-        ) and dist < 750:
+        ) and dist < 500:
             rbt.pos_reg_x.select_mode(tau.Mode.SOFT)
             rbt.pos_reg_y.select_mode(tau.Mode.SOFT)
 

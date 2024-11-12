@@ -70,6 +70,7 @@ class SSLController(BaseProcessor):
         self.wait_ball_moved = aux.Point(0, 0)
         self.tmp = 0
         self.pass_points: list[aux.Point] = []
+        self.we_kick = False
 
     def get_last_referee_command(self) -> RefereeCommand:
         """
@@ -135,13 +136,34 @@ class SSLController(BaseProcessor):
         cur_cmd = self.get_last_referee_command()
         cur_state, cur_active = self.state_machine.get_state()
         self.strategy.change_game_state(cur_state, cur_active)
-        self.router.avoid_ball(False)
+        avoid_ball = False
+        dont_touch = False
+        we_active = False
+        avoid_enemy_half = False
 
         if cur_cmd.state == -1:
             return
 
-        if cur_state == state_machine.State.STOP or (cur_active not in [const.Color.ALL, self.field.ally_color]):
-            self.router.avoid_ball(True)
+        if cur_state == state_machine.State.PREPARE_KICKOFF:
+            if cur_active == self.field.ally_color:
+                self.we_kick = True
+            else:
+                self.we_kick = False
+
+        if ((cur_state == state_machine.State.STOP or cur_active not in [const.Color.ALL, self.field.ally_color])
+            and cur_state not in [state_machine.State.PREPARE_PENALTY, state_machine.State.PENALTY]):
+            avoid_ball = True
+        if ((cur_state == state_machine.State.PREPARE_KICKOFF and cur_active == self.field.ally_color) or
+            cur_state == state_machine.State.KICKOFF and not self.we_kick):
+            dont_touch = True
+        self.router.avoid_ball(avoid_ball, dont_touch)
+
+        if cur_state in [state_machine.State.KICKOFF, state_machine.State.PREPARE_KICKOFF]:
+            avoid_enemy_half = True
+        if ((cur_state == state_machine.State.PREPARE_KICKOFF and cur_active == self.field.ally_color) or
+            cur_state == state_machine.State.KICKOFF):
+            we_active = True
+        self.router.avoid_enemy_half(avoid_enemy_half, we_active)
 
         if cur_cmd.state != self.cur_cmd_state:
             self.state_machine.make_transition(cur_cmd.state)

@@ -80,12 +80,12 @@ class Strategy:
         if self.active_team == ActiveTeam.ALL or field.ally_color == self.active_team:
             self.we_active = True
         else:
-            self.we_active = False
+            self.we_active = False  
 
         waypoints: list[wp.Waypoint] = []
         for i in range(const.TEAM_ROBOTS_MAX_COUNT):
             waypoints.append(wp.Waypoint(field.allies[i].get_pos(), field.allies[i].get_angle(), wp.WType.S_STOP))
-        if self.game_status == GameStates.RUN or 1:
+        if self.game_status == GameStates.RUN:
             self.run(field, waypoints)
             # waypoints[1] = wp.Waypoint(aux.Point(1000,1000),0,wp.WType.S_SLOWDOWN)
         else:
@@ -95,23 +95,35 @@ class Strategy:
                 pass
                 # self.halt(field, waypoints)
             elif self.game_status == GameStates.PREPARE_PENALTY:
-                refs.prepare_penalty(field, waypoints, self.we_active)
+                self.prepare_penalty(field, waypoints)
             elif self.game_status == GameStates.PENALTY:
                 if self.we_active:
                     self.penalty_kick(waypoints, field)
                 else:
                     self.goalkeeper(field)
             elif self.game_status == GameStates.PREPARE_KICKOFF:
-                self.prepare_kickoff(field, waypoints)
+                if self.we_active:
+                    self.run(field, waypoints, State.ATTACK)
+                    self.we_kick = True
+                else:
+                    self.run(field, waypoints, State.DEFENSE)
+                    self.we_kick = False
             elif self.game_status == GameStates.KICKOFF:
-                self.kickoff(field, waypoints)
+                if self.we_kick:
+                    self.run(field, waypoints, State.ATTACK)
+                else:
+                    self.run(field, waypoints, State.DEFENSE)
             elif self.game_status == GameStates.FREE_KICK:
-                self.run(field, waypoints)
+                if self.we_active:
+                    self.run(field, waypoints, State.ATTACK)
+                else:
+                    self.run(field, waypoints, State.DEFENSE)
             elif self.game_status == GameStates.STOP:
-                self.stop(field, waypoints)
+                self.run(field, waypoints, State.DEFENSE)
             elif self.game_status == GameStates.BALL_PLACEMENT:
                 pass
 
+        print(self.game_status, self.active_team)
         return waypoints
 
     def stop(self, field: fld.Field, waypoints: list[wp.Waypoint])->None:
@@ -122,11 +134,14 @@ class Strategy:
             else:
                 waypoints[ally.r_id] = wp.Waypoint(ally.get_pos(),ally.get_angle(),wp.WType.S_STOP)
 
-    def run(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
+    def run(self, field: fld.Field, waypoints: list[wp.Waypoint], constState: Optional[State] = None) -> None:
         """
         Определение глобального состояния игры
         """
         self.do_cycle_config(field)
+        if constState:
+            self.new_st = constState
+            self.global_st = constState
         self.do_roles(field, waypoints)
 
     def debug(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
@@ -216,14 +231,6 @@ class Strategy:
         field.image.draw_line(field.ball.get_pos(), aux.point_on_line(field.ball.get_pos(), p_to_go, 10000))
         return p_to_go
 
-    def prepare_kickoff(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
-        """Настройка перед состоянием kickoff по команде судей"""
-        if self.we_active:
-            self.we_kick = True
-        else:
-            self.we_kick = False
-        self.put_kickoff_waypoints(field, waypoints)
-
     def find_wall_points(self, field: fld.Field, n_rbts: int, min_n: int = 1) -> Optional[list[aux.Point]]:
         """ищет точки для стенки"""
         robot_poses: list[aux.Point] = []
@@ -289,6 +296,8 @@ class Strategy:
         else:
             self.n_roles[Role.WALL] = round(abs(field.ball.get_pos().x - field.enemy_goal.center.x) /
                 const.GOAL_DX / 2 * (len(self.active_allies) - sum(self.n_roles[Role.BALL:Role.WALL])))
+            if self.game_status in [GameStates.KICKOFF, GameStates.PREPARE_KICKOFF]:
+                self.n_roles[Role.WALL] = len(self.active_allies) - sum(self.n_roles[Role.BALL:Role.WALL])
             self.n_roles[Role.RDEF] = len(self.active_allies) - sum(self.n_roles[Role.BALL:Role.RDEF])
             self.doing_kick.id = None
             self.doing_kick.angle = None
@@ -313,7 +322,7 @@ class Strategy:
                 p_to_go = robot_poses[0]
             else:
                 p_to_go = self.goalkeeper(field)
-            field.image.draw_dot(p_to_go, (255, 255, 255), const.ROBOT_R * 1.2)
+            # field.image.draw_dot(p_to_go, (255, 255, 255), const.ROBOT_R * 1.2)
             waypoints[const.GK] = wp.Waypoint(p_to_go,
                 aux.angle_to_point(field.ally_goal.center, aux.Point(0, 0)), wp.WType.S_IGNOREOBSTACLES)
         for n in range(1, self.n_roles[Role.RDEF] + 1):
@@ -373,11 +382,11 @@ class Strategy:
         else:
             angle_to_go = (aux.average_angle([(field.ally_goal.up - field.ball.get_pos()).arg(),
                 (field.ally_goal.down - field.ball.get_pos()).arg()]) - math.pi)
-        p_to_go = aux.rotate(-aux.Point(const.BALL_R + const.ROBOT_R, 0), angle_to_go) + field.ball.get_pos()
+        p_to_go = field.ball.get_pos()
         self.ally_poses.append((self.rbt_roles[0].r_id, p_to_go, angle_to_go))
-        for f in self.ally_poses:
-            field.image.draw_dot(f[1], (255, 255, 255), const.ROBOT_R * 1.2)
-            # print("bbb")
+        # for f in self.ally_poses:
+        #     field.image.draw_dot(f[1], (255, 255, 255), const.ROBOT_R * 1.2)
+        #     # print("bbb")
         if self.global_st == State.ATTACK:
             for ally_pose in self.ally_poses:
                 if ally_pose[0] == self.doing_pass.id and self.doing_pass.point is not None:
@@ -402,6 +411,8 @@ class Strategy:
                         )
                 elif ally_pose[0] == self.doing_kick.id and self.doing_kick.angle is not None:
                     waypoints[ally_pose[0]] = wp.Waypoint(field.ball.get_pos(), self.doing_kick.angle, wp.WType.S_BALL_KICK)
+                elif ally_pose[0] == self.rbt_roles[0].r_id:
+                    waypoints[ally_pose[0]] = wp.Waypoint(ally_pose[1], ally_pose[2], wp.WType.S_BALL_KICK)
                 else:
                     waypoints[ally_pose[0]] = wp.Waypoint(ally_pose[1], ally_pose[2], wp.WType.S_ENDPOINT)
         else:
@@ -415,7 +426,7 @@ class Strategy:
                     angle_to_go = field.allies[ally_pose[0]].get_angle()
                     type_to_go = wp.WType.S_IGNOREOBSTACLES
                 else:
-                    if ally_pose[0] == self.active_allies[0].r_id:
+                    if ally_pose[0] == self.rbt_roles[0].r_id:
                         type_to_go = wp.WType.S_BALL_KICK
                     p_to_go = aux.average_point([ally_pose[1], aux.closest_point_on_line(field.ball.get_pos(), ally_pose[1], robo_point)])
                     angle_to_go = ally_pose[2]
@@ -425,80 +436,19 @@ class Strategy:
         """состояние бияния пенальти"""
         waypoints[const.PENALTY_KICKER] = wp.Waypoint(field.ball.get_pos(),
             fld.gate_angle_size(field.ball.get_pos(), field)[0], wp.WType.S_BALL_KICK)
-        return
 
-    def kickoff(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
-        """Удар мяча из аута"""
-        self.put_kickoff_waypoints(field, waypoints)
-        # self.we_kick = 0
-        if self.we_kick:
-            go_kick = fld.find_nearest_robot(field.ball.get_pos(), field.allies)
-            target = field.enemy_goal.center
-            target.y = 300
-            waypoint = wp.Waypoint(
-                field.ball.get_pos(), (target - field.allies[go_kick.r_id].get_pos()).arg(), wp.WType.S_BALL_KICK
-            )
-            waypoints[go_kick.r_id] = waypoint
-        else:
-            go_kick = fld.find_nearest_robot(field.ball.get_pos(), field.allies)
-            target = aux.point_on_line(field.ball.get_pos(), aux.Point(field.polarity * const.GOAL_DX, 0), 200)
-            waypoint = wp.Waypoint(
-                target, (field.ball.get_pos() - field.allies[go_kick.r_id].get_pos()).arg(), wp.WType.S_IGNOREOBSTACLES
-            )
-            waypoints[go_kick.r_id] = waypoint
-
-    def put_kickoff_waypoints(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
-        """Подготовка перед состоянием kickoff"""
-        rC = 0
-        if self.we_kick:
-            for i in range(const.TEAM_ROBOTS_MAX_COUNT):
-                if field.allies[i].is_used() and field.allies[i].r_id != field.gk_id:
-                    if rC < 3:
-                        if rC == 1:
-                            waypoint = wp.Waypoint(
-                                aux.Point(700 * field.polarity, 0),
-                                aux.angle_to_point(field.allies[i].get_pos(), aux.Point(0, 0)),
-                                wp.WType.S_ENDPOINT,
-                            )
-                        else:
-                            waypoint = wp.Waypoint(
-                                aux.Point(700 * field.polarity, 2000 - 2000 * rC),
-                                aux.angle_to_point(field.allies[i].get_pos(), aux.Point(0, 0)),
-                                wp.WType.S_ENDPOINT,
-                            )
-                        waypoints[i] = waypoint
-                    else:
-                        waypoint = wp.Waypoint(
-                            aux.Point(200 * field.polarity, 1500 - 3000 * (rC - 3)),
-                            aux.angle_to_point(field.allies[i].get_pos(), aux.Point(0, 0)),
-                            wp.WType.S_ENDPOINT,
-                        )
-                        waypoints[i] = waypoint
-                    rC += 1
-        else:
-            for i in range(const.TEAM_ROBOTS_MAX_COUNT):
-                if field.allies[i].is_used() and field.allies[i].r_id != field.gk_id:
-                    if rC == 0:
-                        waypoint = wp.Waypoint(
-                            aux.Point(700 * field.polarity, 0),
-                            aux.angle_to_point(field.allies[i].get_pos(), aux.Point(0, 0)),
-                            wp.WType.S_ENDPOINT,
-                        )
-                    elif rC < 3:
-                        waypoint = wp.Waypoint(
-                            aux.Point(200 * field.polarity, 1000 - 2000 * (rC - 1)),
-                            aux.angle_to_point(field.allies[i].get_pos(), aux.Point(0, 0)),
-                            wp.WType.S_ENDPOINT,
-                        )
-                    else:
-                        waypoint = wp.Waypoint(
-                            aux.Point(200 * field.polarity, 2000 + 4000 * (rC - 4)),
-                            aux.angle_to_point(field.allies[i].get_pos(), aux.Point(0, 0)),
-                            wp.WType.S_ENDPOINT,
-                        )
-                    waypoints[i] = waypoint
-                    rC += 1
-        waypoint = wp.Waypoint(
-            field.ally_goal.center, aux.angle_to_point(field.ally_goal.center, field.ball.get_pos()), wp.WType.S_ENDPOINT
-        )
-        waypoints[field.allies[field.gk_id].r_id] = waypoint
+    def prepare_penalty(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
+        """Подготовка пенальти по команде от судей"""
+        self.active_allies = []
+        for ally in field.allies:
+            if ally.is_used():
+                self.active_allies.append(ally)
+        self.active_allies.sort(key = lambda x: x.r_id)
+        angle_to_go = aux.angle_to_point(field.ally_goal.center, aux.Point(0, 0))
+        for i, robot in enumerate(self.active_allies):
+            if robot.r_id == const.PENALTY_KICKER and self.we_active:
+                p_to_go = field.ball.get_pos() + aux.Point(const.ROBOT_R + const.BALL_R, 0) * field.polarity
+                waypoints[robot.r_id] = wp.Waypoint(p_to_go, angle_to_go, wp.WType.S_ENDPOINT)
+            else:
+                p_to_go = aux.Point(1950 * field.polarity, (2 * i - len(self.active_allies) + 1) / (len(self.active_allies) + 1) * const.HALF_HEIGHT)
+                waypoints[robot.r_id] = wp.Waypoint(p_to_go, angle_to_go, wp.WType.R_IGNORE_GOAl_HULL)
