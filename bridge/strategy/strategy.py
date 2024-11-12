@@ -439,16 +439,21 @@ class Strategy:
 
     def prepare_penalty(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
         """Подготовка пенальти по команде от судей"""
+        now_polarity = field.polarity
+        if not self.we_active:
+            now_polarity *= -1
+            waypoints[const.GK] = wp.Waypoint(self.goalkeeper(field),
+                aux.angle_to_point(field.ally_goal.center, aux.Point(0, 0)), wp.WType.S_IGNOREOBSTACLES)
         self.active_allies = []
         for ally in field.allies:
-            if ally.is_used():
+            if ally.is_used() and (ally.r_id != const.GK or self.we_active):
                 self.active_allies.append(ally)
         self.active_allies.sort(key = lambda x: x.r_id)
-        angle_to_go = aux.angle_to_point(field.ally_goal.center, aux.Point(0, 0))
+        angle_to_go = aux.angle_to_point(aux.RIGHT * now_polarity, aux.Point(0, 0))
         for i, robot in enumerate(self.active_allies):
             if robot.r_id == const.PENALTY_KICKER and self.we_active:
-                p_to_go = field.ball.get_pos() + aux.Point(const.ROBOT_R + const.BALL_R, 0) * field.polarity
+                p_to_go = field.ball.get_pos() + aux.Point(const.ROBOT_R + const.BALL_R, 0) * now_polarity
                 waypoints[robot.r_id] = wp.Waypoint(p_to_go, angle_to_go, wp.WType.S_ENDPOINT)
             else:
-                p_to_go = aux.Point(1950 * field.polarity, (2 * i - len(self.active_allies) + 1) / (len(self.active_allies) + 1) * const.HALF_HEIGHT)
+                p_to_go = aux.Point(1950 * now_polarity, (2 * i - len(self.active_allies) + 1) / (len(self.active_allies) + 1) * const.HALF_HEIGHT)
                 waypoints[robot.r_id] = wp.Waypoint(p_to_go, angle_to_go, wp.WType.R_IGNORE_GOAl_HULL)
