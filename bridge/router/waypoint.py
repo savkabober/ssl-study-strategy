@@ -7,6 +7,7 @@
 - Тип путевой точки
 """
 
+from typing import Optional
 from enum import Enum
 
 from bridge.auxiliary import aux

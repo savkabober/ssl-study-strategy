@@ -56,8 +56,8 @@ class Robot(entity.Entity):
 
         # v! REAL
         else:
-            self.k_xx = -2.7
-            self.k_yy = 2.7
+            self.k_xx = -2
+            self.k_yy = 2
             self.k_ww = 0.08
             self.k_wy = 0
             self.t_wy = 0.15
@@ -81,15 +81,15 @@ class Robot(entity.Entity):
         if self.r_id < 9:
 
             gains_full = [1, 0, 0, const.MAX_SPEED]
-            gains_soft = [1, 0, 0, const.SOFT_MAX_SPEED]
-            a_gains_full = [1.5, 0, 0, const.MAX_SPEED_R]
+            gains_soft = [1.5, 0, 0, const.SOFT_MAX_SPEED]
+            a_gains_full = [2, 0, 0, const.MAX_SPEED_R]
         # gains_soft = [10, 0.32, 0, const.SOFT_MAX_SPEED]
         # gains_soft = gains_full
         if const.IS_SIMULATOR_USED:
             # gains_full = [8, 0.35, 0, const.MAX_SPEED]
-            gains_full = [2, 0.08, 0, const.MAX_SPEED]
-            gains_soft = [2, 0.08, 0, const.SOFT_MAX_SPEED]
-            a_gains_full = [2, 0.1, 0.1, const.MAX_SPEED_R]  # 4, 0.1, 0.1
+            gains_full = [4, 0.08, 0, const.MAX_SPEED]
+            gains_soft = [4, 0.08, 0, const.SOFT_MAX_SPEED]
+            a_gains_full = [1, 0.1, 0.1, const.MAX_SPEED_R]  # 4, 0.1, 0.1
         # a_gains_soft = [4, 0.07, 8, const.SOFT_MAX_SPEED_R]
         a_gains_soft = a_gains_full
         # else:
@@ -135,6 +135,7 @@ class Robot(entity.Entity):
             return False
 
     def to_entity(self) -> entity.Entity:
+        """Преобразовать в объъект"""
         ent = entity.Entity(self._pos, self._angle, self._radius)
         ent._vel = self._vel
         # ent._acc = self._acc

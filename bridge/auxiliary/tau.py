@@ -190,7 +190,7 @@ class PISD:
             self.__max_out[self.__mode.value],
         )
 
-    def process(self, xerr: float, x_i: float) -> float:
+    def process(self, xerr: float, x_i: float, k_angle: float = 1) -> float:
         """
         Рассчитать следующий тик регулятора
         """
@@ -199,7 +199,7 @@ class PISD:
         s = xerr + k_d * x_i + k_i * self.__int.get_val()
         u = gain * s
 
-        u_clipped = aux.minmax(u, max_out)
+        u_clipped = aux.minmax(u, max_out * k_angle)
 
         if u != u_clipped:
             self.__int.process(xerr + k_d * x_i)
