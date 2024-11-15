@@ -34,7 +34,6 @@ class SSLController(BaseProcessor):
     referee_reader: DataReader = attr.ib(init=False)
     commands_sink_writer: DataWriter = attr.ib(init=False)
 
-
     dbg_game_status: strategy.GameStates = strategy.GameStates.TIMEOUT
     # dbg_state: strategy.States = strategy.States.DEBUG
 
@@ -54,7 +53,6 @@ class SSLController(BaseProcessor):
         self.commands_sink_writer = DataWriter(data_bus, const.TOPIC_SINK, 20)
         self.image_writer = DataWriter(data_bus, const.IMAGE_TOPIC, 20)
         self.points_topic = DataReader(data_bus, const.POINTS_TOPIC)
-
 
         self.field = fld.Field()
         self.router = router.Router(self.field)
@@ -135,7 +133,8 @@ class SSLController(BaseProcessor):
         """Get referee commands"""
         cur_cmd = self.get_last_referee_command()
         cur_state, cur_active = self.state_machine.get_state()
-        # cur_state = state_machine.State.RUN
+        cur_state = state_machine.State.TIMEOUT
+        cur_active = self.field.ally_color
         self.strategy.change_game_state(cur_state, cur_active)
         avoid_ball = False
         dont_touch = False
@@ -151,18 +150,21 @@ class SSLController(BaseProcessor):
             else:
                 self.we_kick = False
 
-        if ((cur_state == state_machine.State.STOP or cur_active not in [const.Color.ALL, self.field.ally_color])
-            and cur_state not in [state_machine.State.PREPARE_PENALTY, state_machine.State.PENALTY]):
-            avoid_ball = True
-        if ((cur_state == state_machine.State.PREPARE_KICKOFF and cur_active == self.field.ally_color) or
-            cur_state == state_machine.State.KICKOFF and not self.we_kick):
+        if ((cur_state == state_machine.State.PREPARE_KICKOFF and cur_active == self.field.ally_color)):
             dont_touch = True
+
+        if (
+            cur_state == state_machine.State.STOP or cur_active not in [const.Color.ALL, self.field.ally_color]
+            or (cur_state == state_machine.State.KICKOFF and not self.we_kick)
+        ) and cur_state not in [state_machine.State.PREPARE_PENALTY, state_machine.State.PENALTY]:
+            avoid_ball = True
         self.router.avoid_ball(avoid_ball, dont_touch)
 
         if cur_state in [state_machine.State.KICKOFF, state_machine.State.PREPARE_KICKOFF]:
             avoid_enemy_half = True
-        if ((cur_state == state_machine.State.PREPARE_KICKOFF and cur_active == self.field.ally_color) or
-            cur_state == state_machine.State.KICKOFF):
+        if (
+            cur_state == state_machine.State.PREPARE_KICKOFF and cur_active == self.field.ally_color
+        ) or cur_state == state_machine.State.KICKOFF:
             we_active = True
         self.router.avoid_enemy_half(avoid_enemy_half, we_active)
 

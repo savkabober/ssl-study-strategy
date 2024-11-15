@@ -7,7 +7,6 @@
 - Тип путевой точки
 """
 
-from typing import Optional
 from enum import Enum
 
 from bridge.auxiliary import aux
@@ -30,7 +29,7 @@ class WType(Enum):
     S_VELOCITY = 8  # Разворачиваться с мячом
     # waypoint.pos - скорость; waypoint.angle - угловая скорость
     S_BALL_PASS = 9  # Give pass to point
-    S_SLOWDOWN = 13#slow down during stop state
+    S_SLOWDOWN = 13  # slow down during stop state
     R_PASSTHROUGH = 10  # Двигаться в точку не останавливаясь (промежуточная точка пути)
     R_BALL_ALIGN = 11  # Выровняться напротив мяча, приготовившись его захватить
     R_IGNORE_GOAl_HULL = 12

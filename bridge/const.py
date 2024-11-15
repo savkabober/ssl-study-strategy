@@ -17,15 +17,15 @@ class Color(Enum):
 # GAME SETTING CONSTS
 DIV = "C"
 COLOR = Color.BLUE
-POLARITY = -1  # -1 если ворота синих на +x; 1 если ворота синих на -x
+POLARITY = 1  # -1 если ворота синих на +x; 1 если ворота синих на -x
 
-IS_SIMULATOR_USED = False
+IS_SIMULATOR_USED = True
 IS_DRIBBLER_USED = False  # dribbler and upper_kick
 SELF_PLAY = False
 
 GK = 0
 PENALTY_KICKER = 1
-ENEMY_GK = 0
+ENEMY_GK = 2
 
 DELTA_ANGLE = 0.15
 # погрешность кикера
@@ -163,3 +163,5 @@ VOLTAGE_PASS = 5
 VOLTAGE_SHOOT = 10
 VOLTAGE_UP = 8
 VOLTAGE_ZERO = min(VOLTAGE_PASS, VOLTAGE_SHOOT, VOLTAGE_UP)
+
+K_TIMEOUT = 0.5

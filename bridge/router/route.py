@@ -152,10 +152,10 @@ class Route:
         vec_err = target_point.pos - robot.get_pos()
 
         # if 0 <= rbt.r_id <= 2:
-            # field.image.draw_dot(target_point.pos, (100 * rbt.r_id, 100 * rbt.r_id, 100 * rbt.r_id), 120 - 10 *  rbt.r_id)
-            # print(target_point)
-            # if rbt.r_id == 1:
-            #     print(target_point.pos, vec_err)
+        # field.image.draw_dot(target_point.pos, (100 * rbt.r_id, 100 * rbt.r_id, 100 * rbt.r_id), 120 - 10 *  rbt.r_id)
+        # print(target_point)
+        # if rbt.r_id == 1:
+        #     print(target_point.pos, vec_err)
 
         # #   NOTE: kostil!!!!!!!
         # if (dist > 1500):
@@ -187,6 +187,8 @@ class Route:
                 wp.WType.S_BALL_GRAB,
                 wp.WType.S_BALL_GO,
                 wp.WType.S_BALL_PASS,
+                wp.WType.R_PASSTHROUGH,
+                wp.WType.S_ENDPOINT
             ]
         ) and dist < 500:
             robot.pos_reg_x.select_mode(tau.Mode.SOFT)
@@ -237,16 +239,18 @@ class Route:
                 gl_vec_err = now_end - robot.get_pos()
                 u_x = -robot.pos_reg_x.process(gl_vec_err.x, -cur_vel.x, math.cos(now_ang))
                 u_y = -robot.pos_reg_y.process(gl_vec_err.y, -cur_vel.y, math.sin(now_ang))
+                if robot.r_id == 2:
+                    print(u_x, u_y)
             else:
                 u_x = -robot.pos_reg_x.process(vec_err.x, -cur_vel.x, math.cos(now_ang))
                 u_y = -robot.pos_reg_y.process(vec_err.y, -cur_vel.y, math.sin(now_ang))
                 # transl_vel = vel0 * u
             transl_vel = aux.Point(u_x, u_y)
             angle0 = end_point.angle
-            if(target_point.type == wp.WType.S_SLOWDOWN):
-                if(transl_vel.mag()>=const.MAX_STOP_SPEED):
-                    transl_vel = transl_vel.unity()*const.MAX_STOP_SPEED
-                    
+            if target_point.type == wp.WType.S_SLOWDOWN:
+                if transl_vel.mag() >= const.MAX_STOP_SPEED:
+                    transl_vel = transl_vel.unity() * const.MAX_STOP_SPEED
+
         aerr = aux.wind_down_angle(angle0 - robot.get_angle())
 
         ang_vel = robot.angle_reg.process(aerr, -robot.get_anglevel())
