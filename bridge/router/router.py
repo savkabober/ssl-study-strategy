@@ -197,7 +197,7 @@ class Router:
         #     field.image.draw_dot(end_p.point(), (0, int(255 * (idx + 1) / 3), int(255 * (idx + 1) / 3)), 150)
         all_robots: list[entity.Entity | rbt.Robot] = []
         queue: list[PointTree] = [start_p]
-        n_max = 100
+        n_max = 200
         n_steps = 0
         finish = False
         point_go_now = None
@@ -330,7 +330,7 @@ class Router:
         if 2 >= idx >= 0:
             point_mas = end_p
             while point_mas.father is not None:
-                #field.image.draw_dot(point_mas.point(), (int(255 * (idx + 1) / 3), 0, 0), 50)
+                field.image.draw_dot(point_mas.point(), (int(255 * (idx + 1) / 3), 0, 0), 50)
                 point_mas = point_mas.father
             #field.image.draw_dot(end_p.point(), (0, int(255 * (idx + 1) / 3), int(255 * (idx + 1) / 3)), 100)
             #field.image.draw_dot(start_p.point(), size_in_mms=50)

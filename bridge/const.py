@@ -19,7 +19,7 @@ DIV = "C"
 COLOR = Color.YELLOW
 POLARITY = -1  # -1 если ворота синих на +x; 1 если ворота синих на -x
 
-IS_SIMULATOR_USED = True
+IS_SIMULATOR_USED = False   
 IS_DRIBBLER_USED = False  # dribbler and upper_kick
 SELF_PLAY = False
 
@@ -91,8 +91,8 @@ Ts = 0.05  # s
 # MAX_SPEED_R = 50
 # ACCELERATION = 3
 # BASE_KICKER_VOLTAGE = 7.0
-MAX_SPEED = 1250
-MAX_STOP_SPEED = 2250
+MAX_SPEED = 750
+MAX_STOP_SPEED = 750
 MAX_SPEED_R = 45
 SOFT_MAX_SPEED = 500
 SOFT_MAX_SPEED_R = 16
