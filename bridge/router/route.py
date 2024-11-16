@@ -3,6 +3,7 @@
 """
 
 import math
+from typing import Optional
 
 import bridge.router.waypoint as wp
 from bridge import const
@@ -100,7 +101,7 @@ class Route:
         """
         return self._destination[0].type != wp.WType.T_GRAVEYARD
 
-    def get_length(self) -> float:
+    def get_length(self, field: Optional[fld.Field] = None) -> float:
         """
         Получить длину маршрута
         """
@@ -115,6 +116,8 @@ class Route:
                 wpt.type == wp.WType.S_BALL_PASS,
             ]:
                 break
+            if field:
+                field.image.draw_line(wpt.pos, last_wp_pos, (255, 255, 255), 5)
             dist += (wpt.pos - last_wp_pos).mag()
             last_wp_pos = wpt.pos
         return dist
@@ -145,7 +148,10 @@ class Route:
 
         cur_vel = robot.get_vel()
 
-        dist = self.get_length()
+        if robot.r_id == 1:
+            dist = self.get_length(field)
+        else:
+            dist = self.get_length()
 
         end_point = self.get_dest_wp()
 
@@ -179,6 +185,9 @@ class Route:
         robot.pos_reg_x.select_mode(tau.Mode.NORMAL)
         robot.pos_reg_y.select_mode(tau.Mode.NORMAL)
 
+        # if robot.r_id == 1:
+        #     print(dist)
+
         if (
             end_point.type
             in [
@@ -188,9 +197,11 @@ class Route:
                 wp.WType.S_BALL_GO,
                 wp.WType.S_BALL_PASS,
                 wp.WType.R_PASSTHROUGH,
-                wp.WType.S_ENDPOINT
+                wp.WType.S_ENDPOINT,
+                wp.WType.R_BALL_ALIGN
             ]
-        ) and dist < 500:
+        ) and (robot.get_pos() - end_point.pos).mag() < 350:
+            # print("aaa")
             robot.pos_reg_x.select_mode(tau.Mode.SOFT)
             robot.pos_reg_y.select_mode(tau.Mode.SOFT)
 
@@ -239,13 +250,14 @@ class Route:
                 gl_vec_err = now_end - robot.get_pos()
                 u_x = -robot.pos_reg_x.process(gl_vec_err.x, -cur_vel.x, math.cos(now_ang))
                 u_y = -robot.pos_reg_y.process(gl_vec_err.y, -cur_vel.y, math.sin(now_ang))
-                if robot.r_id == 2:
-                    print(u_x, u_y)
             else:
                 u_x = -robot.pos_reg_x.process(vec_err.x, -cur_vel.x, math.cos(now_ang))
                 u_y = -robot.pos_reg_y.process(vec_err.y, -cur_vel.y, math.sin(now_ang))
                 # transl_vel = vel0 * u
             transl_vel = aux.Point(u_x, u_y)
+            # if robot.r_id == 1:
+            #     print(target_point.type, transl_vel, target_point.pos)
+                # field.image.draw_dot(target_point.pos, (0, 0, 0), 100)
             angle0 = end_point.angle
             if target_point.type == wp.WType.S_SLOWDOWN:
                 if transl_vel.mag() >= const.MAX_STOP_SPEED:
@@ -278,10 +290,10 @@ class Route:
                 robot.auto_kick_ = 1
             else:
                 robot.auto_kick_ = 2
-        elif end_point.type == wp.WType.S_BALL_KICK_UP and robot.is_kick_aligned_by_angle(end_point.angle):
-            robot.auto_kick_ = 1
-        else:
-            robot.auto_kick_ = 0
+        # elif end_point.type == wp.WType.S_BALL_KICK_UP and robot.is_kick_aligned_by_angle(end_point.angle):
+        #     robot.auto_kick_ = 1
+        # else:
+        #     robot.auto_kick_ = 0
 
         robot.update_vel_xyw(transl_vel, ang_vel)
 

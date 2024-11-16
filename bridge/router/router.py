@@ -229,7 +229,7 @@ class Router:
                     point_go_now = PointTree(help_p.x, help_p.y)
                     flag_way = False
                     angle_to_go = field.allies[idx].get_angle()
-                    field.image.draw_dot(point_go_now.point(), (255, 100, 0), 100)
+                    # field.image.draw_dot(point_go_now.point(), (255, 100, 0), 100)
                     # print("aaa")
                 wp_ball_r = (const.BALL_R + const.ROBOT_R) * const.K_BALL_DIST - const.ROBOT_R
         wp_ball = rbt.Robot(field.ball.get_pos(), 0, wp_ball_r + now_plus, const.COLOR, 0, 0)
@@ -337,10 +337,10 @@ class Router:
         if 2 >= idx >= 0:
             point_mas = end_p
             while point_mas.father is not None:
-                field.image.draw_dot(point_mas.point(), (int(255 * (idx + 1) / 3), 0, 0), 50)
+                #field.image.draw_dot(point_mas.point(), (int(255 * (idx + 1) / 3), 0, 0), 50)
                 point_mas = point_mas.father
-            field.image.draw_dot(end_p.point(), (0, int(255 * (idx + 1) / 3), int(255 * (idx + 1) / 3)), 100)
-            field.image.draw_dot(start_p.point(), size_in_mms=50)
+            #field.image.draw_dot(end_p.point(), (0, int(255 * (idx + 1) / 3), int(255 * (idx + 1) / 3)), 100)
+            #field.image.draw_dot(start_p.point(), size_in_mms=50)
         if finish or point_go_now is None:
             return None
         # if point_go_now and idx == 2:

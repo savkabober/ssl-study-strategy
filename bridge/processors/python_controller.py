@@ -133,7 +133,7 @@ class SSLController(BaseProcessor):
         """Get referee commands"""
         cur_cmd = self.get_last_referee_command()
         cur_state, cur_active = self.state_machine.get_state()
-        cur_state = state_machine.State.TIMEOUT
+        cur_state = state_machine.State.RUN
         cur_active = self.field.ally_color
         self.strategy.change_game_state(cur_state, cur_active)
         avoid_ball = False

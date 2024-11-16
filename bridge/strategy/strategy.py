@@ -128,7 +128,7 @@ class Strategy:
             elif self.game_status == GameStates.BALL_PLACEMENT:
                 pass
 
-        print(self.game_status, field.is_ball_moves())
+        print(self.game_status, field.is_ball_moves(), self.doing_pass.id)
         return waypoints
 
     def stop(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
@@ -461,31 +461,19 @@ class Strategy:
                         robo_point = field.allies[ally_pose[0]].get_pos()
                         p_to_go = aux.closest_point_on_line(self.ball_point, field.ball.get_pos(), robo_point, is_inf="L")
                         p_to_go = aux.point_on_line(robo_point, p_to_go, aux.dist(robo_point, p_to_go) * const.K_PASS_DIST)
-                        help_p = aux.rotate(aux.RIGHT, field.ball.get_vel().arg()) + field.ball.get_pos()
                         # print(abs(aux.get_angle_between_points(field.allies[ally_pose[0]].get_pos(), field.ball.get_pos(), help_p)))
-                        if (
-                            abs(
-                                aux.get_angle_between_points(
-                                    field.allies[ally_pose[0]].get_pos(), field.ball.get_pos(), help_p
-                                )
+                        real_ball_point = aux.point_on_line(
+                            field.ball.get_pos(), p_to_go, const.SUMM_DELAY * field.ball.get_vel().mag()
+                        )
+                        if aux.dist(field.ball.get_pos(), real_ball_point) < aux.dist(field.ball.get_pos(), p_to_go):
+                            p_to_go = aux.point_on_line(
+                                real_ball_point, p_to_go, max(aux.dist(real_ball_point, p_to_go), const.PASS_BALL_DIST)
                             )
-                            < math.pi * 3 / 4
-                        ):
-                            real_ball_point = aux.point_on_line(
-                                field.ball.get_pos(), p_to_go, const.SUMM_DELAY * field.ball.get_vel().mag()
-                            )
-                            if aux.dist(field.ball.get_pos(), real_ball_point) < aux.dist(field.ball.get_pos(), p_to_go):
-                                p_to_go = aux.point_on_line(
-                                    real_ball_point, p_to_go, max(aux.dist(real_ball_point, p_to_go), const.PASS_BALL_DIST)
-                                )
-                                print("aaa")
-                            field.image.draw_dot(real_ball_point, (255, 255, 0), 40)
-                            waypoints[ally_pose[0]] = wp.Waypoint(
-                                p_to_go, aux.angle_to_point(p_to_go, self.ball_point), wp.WType.S_ENDPOINT
-                            )
-                        else:
-                            self.doing_pass.id = None
-                            self.doing_pass.point = None
+                            print("aaa")
+                        field.image.draw_dot(real_ball_point, (255, 255, 0), 40)
+                        waypoints[ally_pose[0]] = wp.Waypoint(
+                            p_to_go, aux.angle_to_point(p_to_go, self.ball_point), wp.WType.S_ENDPOINT
+                        )
                     else:
                         waypoints[ally_pose[0]] = wp.Waypoint(
                             self.doing_pass.point,
@@ -525,9 +513,12 @@ class Strategy:
 
     def penalty_kick(self, waypoints: list[wp.Waypoint], field: fld.Field) -> None:
         """состояние бияния пенальти"""
-        waypoints[const.PENALTY_KICKER] = wp.Waypoint(
-            field.ball.get_pos(), fld.gate_angle_size(field.ball.get_pos(), field)[0], wp.WType.S_BALL_KICK
-        )
+        if field.allies[const.PENALTY_KICKER].get_pos().x * field.polarity > 0:
+            wp_type = wp.WType.S_BALL_KICK_UP
+        else:
+            wp_type = wp.WType.S_BALL_KICK
+        print(field.polarity)
+        waypoints[const.PENALTY_KICKER] = wp.Waypoint(field.ball.get_pos(), fld.gate_angle_size(field.ball.get_pos(), field)[0], wp_type)
 
     def prepare_penalty(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
         """Подготовка пенальти по команде от судей"""
