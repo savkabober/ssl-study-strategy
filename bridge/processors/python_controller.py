@@ -171,7 +171,8 @@ class SSLController(BaseProcessor):
         else:
             self.field.be_slow = False
 
-        self.router.put_state(avoid_ball, dont_touch, avoid_enemy_half, we_active)
+        # self.router.put_state(avoid_ball, dont_touch, avoid_enemy_half, we_active)
+        self.router.put_state(False, False, False, True)
 
         if cur_cmd.state != self.cur_cmd_state:
             self.state_machine.make_transition(cur_cmd.state)

@@ -66,25 +66,25 @@ class Router:
                 self.routes[idx].set_dest_wp(wp.Waypoint(dest_pos, angle0, wp.WType.S_ENDPOINT))
                 flag = True
 
-            if idx != field.gk_id and target.type != wp.WType.R_IGNORE_GOAl_HULL:
-                for goal in [field.ally_goal, field.enemy_goal]:
-                    if aux.is_point_inside_poly(dest_pos, goal.big_hull):
-                        closest_out = aux.nearest_point_on_poly(dest_pos, goal.big_hull)
-                        dest_pos = closest_out
-                        self.routes[idx].set_dest_wp(wp.Waypoint(dest_pos, angle0, wp.WType.S_ENDPOINT))
-                        flag = True
-                    inters = aux.segments_poly_intersect(dest_pos, field.allies[idx].get_pos(), goal.hull)
-                    if len(inters) > 1:
-                        on_way = []
-                        for i in range(2, 5, 2):
-                            if aux.get_line_intersection(field.allies[idx].get_pos(), dest_pos, goal.hull[i - 1], goal.hull[i]):
-                                on_way.append(goal.hull[max(2, i - 1)])
-                                # print(i)
-                        if on_way:
-                            now_on_way = aux.find_nearest_point(field.allies[idx].get_pos(), on_way)
-                            dest_pos = aux.point_on_line(goal.center, now_on_way, aux.dist(goal.center, now_on_way) * 1.2)
-                            self.routes[idx].set_dest_wp(wp.Waypoint(dest_pos, angle0, wp.WType.R_PASSTHROUGH))
-                            flag = True
+            # if idx != field.gk_id and target.type != wp.WType.R_IGNORE_GOAl_HULL:
+            #     for goal in [field.ally_goal, field.enemy_goal]:
+            #         if aux.is_point_inside_poly(dest_pos, goal.big_hull):
+            #             closest_out = aux.nearest_point_on_poly(dest_pos, goal.big_hull)
+            #             dest_pos = closest_out
+            #             self.routes[idx].set_dest_wp(wp.Waypoint(dest_pos, angle0, wp.WType.S_ENDPOINT))
+            #             flag = True
+            #         inters = aux.segments_poly_intersect(dest_pos, field.allies[idx].get_pos(), goal.hull)
+            #         if len(inters) > 1:
+            #             on_way = []
+            #             for i in range(2, 5, 2):
+            #                 if aux.get_line_intersection(field.allies[idx].get_pos(), dest_pos, goal.hull[i - 1], goal.hull[i]):
+            #                     on_way.append(goal.hull[max(2, i - 1)])
+            #                     # print(i)
+            #             if on_way:
+            #                 now_on_way = aux.find_nearest_point(field.allies[idx].get_pos(), on_way)
+            #                 dest_pos = aux.point_on_line(goal.center, now_on_way, aux.dist(goal.center, now_on_way) * 1.2)
+            #                 self.routes[idx].set_dest_wp(wp.Waypoint(dest_pos, angle0, wp.WType.R_PASSTHROUGH))
+            #                 flag = True
 
             if self.__avoid_ball or (self.__dont_touch and closest_id != idx):
                 # print(idx, "defe")
@@ -129,32 +129,6 @@ class Router:
                     align_wp = self.calc_grab_wp(idx)
                     self.routes[idx].insert_wp(align_wp)
 
-                if idx == field.gk_id or self.routes[idx].get_dest_wp().type == wp.WType.R_IGNORE_GOAl_HULL:
-                    pth_wp = self.calc_passthrough_wp(field, idx)
-                    # pth_wp = None
-                    if pth_wp is not None:
-                        self.routes[idx].insert_wp(pth_wp)
-                    continue
-
-                if not (self.__we_active and closest_id == idx) and self.__avoid_enemy_half:
-                    self_pos = field.allies[idx].get_pos()
-                    if self_pos.x * field.polarity < const.ROBOT_R:
-                        # if idx == 2:
-                        #     print("yyy")
-                        closest_out = aux.Point(self_pos.x, self_pos.y)
-                        closest_out.x = (const.ROBOT_R + const.DELTA_DIST) * field.polarity
-                        angle0 = self.routes[idx].get_dest_wp().angle
-                        self.routes[idx].insert_wp(wp.Waypoint(closest_out, angle0, wp.WType.R_PASSTHROUGH))
-                        # print(self_pos)
-                        continue
-
-                for goal in [field.ally_goal, field.enemy_goal]:
-                    if aux.is_point_inside_poly(self_pos, goal.hull):
-                        closest_out = aux.nearest_point_on_poly(self_pos, goal.big_hull)
-                        angle0 = self.routes[idx].get_dest_wp().angle
-                        self.routes[idx].insert_wp(wp.Waypoint(closest_out, angle0, wp.WType.R_PASSTHROUGH))
-                        continue
-
                 if self.__avoid_ball or (self.__dont_touch and closest_id != idx):
                     # dest_pos = self.routes[idx].get_dest_wp().pos
                     now_plus = 0
@@ -169,11 +143,33 @@ class Router:
                         self.routes[idx].insert_wp(wp.Waypoint(closest_out, angle0, wp.WType.R_PASSTHROUGH))
                         # print("out", closest_out)
                         continue
-                # if self.__dont_touch and self.routes[idx].get_dest_wp().type == wp.WType.S_BALL_KICK:
-                #     angle0 = self.routes[idx].get_dest_wp().angle
-                #     delta = -aux.rotate(aux.Point(const.BALL_R + const.ROBOT_R, 0), angle0) * 2
-                #     self.routes[idx].insert_wp(wp.Waypoint(field.ball.get_pos() + delta, angle0, wp.WType.S_ENDPOINT))
-                #     continue
+            
+                if not (self.__we_active and closest_id == idx) and self.__avoid_enemy_half:
+                    self_pos = field.allies[idx].get_pos()
+                    if self_pos.x * field.polarity < const.ROBOT_R:
+                        # if idx == 2:
+                        #     print("yyy")
+                        closest_out = aux.Point(self_pos.x, self_pos.y)
+                        closest_out.x = (const.ROBOT_R + const.DELTA_DIST) * field.polarity
+                        angle0 = self.routes[idx].get_dest_wp().angle
+                        self.routes[idx].insert_wp(wp.Waypoint(closest_out, angle0, wp.WType.R_PASSTHROUGH))
+                        # print(self_pos)
+                        continue
+
+                if idx == field.gk_id or self.routes[idx].get_dest_wp().type == wp.WType.R_IGNORE_GOAl_HULL:
+                    pth_wp = self.calc_passthrough_wp(field, idx)
+                    # pth_wp = None
+                    if pth_wp is not None:
+                        self.routes[idx].insert_wp(pth_wp)
+                    continue
+
+                # for goal in [field.ally_goal, field.enemy_goal]:
+                #     if aux.is_point_inside_poly(self_pos, goal.hull):
+                #         closest_out = aux.nearest_point_on_poly(self_pos, goal.big_hull)
+                #         angle0 = self.routes[idx].get_dest_wp().angle
+                #         self.routes[idx].insert_wp(wp.Waypoint(closest_out, angle0, wp.WType.R_PASSTHROUGH))
+                #         continue
+
                 pth_wp = self.calc_passthrough_wp(field, idx)
                 if pth_wp is not None:
                     is_inside = False

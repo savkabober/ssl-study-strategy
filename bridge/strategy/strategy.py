@@ -91,7 +91,7 @@ class Strategy:
         waypoints: list[wp.Waypoint] = []
         for i in range(const.TEAM_ROBOTS_MAX_COUNT):
             waypoints.append(wp.Waypoint(field.allies[i].get_pos(), field.allies[i].get_angle(), wp.WType.S_STOP))
-        if self.game_status == GameStates.RUN:
+        if self.game_status == GameStates.RUN or 1:
             self.run(field, waypoints)
         else:
             if self.game_status == GameStates.TIMEOUT:
@@ -144,11 +144,34 @@ class Strategy:
         """
         Определение глобального состояния игры
         """
-        self.do_cycle_config(field)
-        if const_state:
-            self.new_st = const_state
-            self.global_st = const_state
-        self.do_roles(field, waypoints)
+        if self.game_status == GameStates.FREE_KICK:
+            if aux.dist(fld.find_nearest_robots(aux.Point(90, 700), field.enemies)[0].get_pos(), aux.Point(90, 700)) < 300:
+                now_st = 0
+            else:
+                now_st = 1
+        elif self.game_status == GameStates.KICKOFF:
+            now_st = 2
+        elif self.game_status == GameStates.PENALTY:
+            now_st = 3
+        else:
+            now_st = 4
+        if now_st == 0:
+            print("aa")
+            waypoints[0] = wp.Waypoint(aux.Point(2100, 300), math.pi / 2, wp.WType.S_ENDPOINT)
+            waypoints[1] = wp.Waypoint(aux.Point(1650, 900), math.pi / 2, wp.WType.S_ENDPOINT)
+            waypoints[2] = wp.Waypoint(aux.Point(1850, 900), math.pi / 2, wp.WType.S_ENDPOINT)
+        elif now_st == 1:
+            waypoints[0] = wp.Waypoint(aux.Point(-1850, 1420), -math.pi / 2, wp.WType.S_ENDPOINT)
+            waypoints[1] = wp.Waypoint(aux.Point(-590, -600), -math.pi / 2, wp.WType.S_ENDPOINT)
+            waypoints[2] = wp.Waypoint(aux.Point(150, 700), -math.pi / 2, wp.WType.S_ENDPOINT)
+        elif now_st == 2:
+            waypoints[0] = wp.Waypoint(aux.Point(250, 700), -math.pi, wp.WType.S_ENDPOINT)
+            waypoints[1] = wp.Waypoint(aux.Point(250, 0), -math.pi, wp.WType.S_ENDPOINT)
+            waypoints[2] = wp.Waypoint(aux.Point(2100, 0), -math.pi, wp.WType.S_ENDPOINT)
+        elif now_st == 3:
+            waypoints[0] = wp.Waypoint(aux.Point(310, 800), -math.pi, wp.WType.S_ENDPOINT)
+            waypoints[1] = wp.Waypoint(aux.Point(-250, 0), -math.pi, wp.WType.S_ENDPOINT)
+            waypoints[2] = wp.Waypoint(aux.Point(310, -800), -math.pi, wp.WType.S_ENDPOINT)
         # self.debug(field, waypoints)
 
     def debug(self, field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
