@@ -17,9 +17,9 @@ class Color(Enum):
 # GAME SETTING CONSTS
 DIV = "C"
 COLOR = Color.YELLOW
-POLARITY = -1  # -1 если ворота синих на +x; 1 если ворота синих на -x
+POLARITY = 1  # -1 если ворота синих на +x; 1 если ворота синих на -x
 
-IS_SIMULATOR_USED = True
+IS_SIMULATOR_USED = False
 IS_DRIBBLER_USED = False  # dribbler and upper_kick
 SELF_PLAY = False
 
@@ -91,7 +91,7 @@ Ts = 0.05  # s
 # MAX_SPEED_R = 50
 # ACCELERATION = 3
 # BASE_KICKER_VOLTAGE = 7.0
-MAX_SPEED = 1250
+MAX_SPEED = 750
 MAX_STOP_SPEED = 2250
 MAX_SPEED_R = 45
 SOFT_MAX_SPEED = 500
@@ -146,7 +146,7 @@ PASS_BALL_DIST = 400
 FIX_KICK_DIST = 170
 DELTA_DIST = 50
 PRIORITY_DIST = 150
-K_PASS_DIST = 1
+K_PASS_DIST = 1.5
 K_BALL_DIST = 1.5
 
 # ROUTE CONSTS

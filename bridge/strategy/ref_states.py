@@ -24,8 +24,8 @@ def timeout(field: fld.Field, waypoints: list[wp.Waypoint]) -> None:
     for ally in field.allies:
         if ally.is_used():
             active_allies.append(ally)
-    # start_p = -aux.Point(1500, 0) * field.polarity
-    start_p = field.ball.get_pos()
+    # start_p = field.ball.get_pos()
+    start_p = aux.Point(0, 0)
     for i, robot in enumerate(active_allies):
         delta_p = aux.rotate(aux.Point(600 + 300 * math.sin(time.time() * const.K_TIMEOUT), 0), time.time() * const.K_TIMEOUT + 2 * math.pi / len(active_allies) * i)
         waypoints[robot.r_id] = wp.Waypoint(start_p + delta_p, 0, wp.WType.R_IGNORE_GOAl_HULL)

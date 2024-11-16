@@ -51,7 +51,7 @@ class StateMachine:
         self.__transitions: dict = {}
         self.__active = Color.ALL
 
-        # self.add_transition(State.HALT, State.STOP, Command.STOP)
+        self.add_transition(State.HALT, State.STOP, Command.STOP)
         self.add_transition(State.HALT, State.RUN, Command.FORCE_START)
         self.add_transition(State.HALT, State.FREE_KICK, Command.FREE_KICK)
         self.add_transition(State.HALT, State.PREPARE_KICKOFF, Command.PREPARE_KICKOFF)
@@ -63,7 +63,7 @@ class StateMachine:
             self.add_transition(state, State.STOP, Command.STOP)
             self.add_transition(state, State.TIMEOUT, Command.TIMEOUT)
 
-        # self.add_transition(State.TIMEOUT, State.STOP, Command.STOP)
+        self.add_transition(State.TIMEOUT, State.STOP, Command.STOP)
 
         self.add_transition(State.STOP, State.PREPARE_KICKOFF, Command.PREPARE_KICKOFF)
         self.add_transition(State.STOP, State.BALL_PLACEMENT, Command.BALL_PLACEMENT)
@@ -74,7 +74,7 @@ class StateMachine:
         self.add_transition(State.PREPARE_KICKOFF, State.KICKOFF, Command.NORMAL_START)
 
         self.add_transition(State.BALL_PLACEMENT, State.FREE_KICK, Command.CONTINUE)
-        # self.add_transition(State.BALL_PLACEMENT, State.STOP, Command.STOP)
+        self.add_transition(State.BALL_PLACEMENT, State.STOP, Command.STOP)
 
         self.add_transition(State.PREPARE_PENALTY, State.PENALTY, Command.NORMAL_START2)
 
@@ -86,7 +86,7 @@ class StateMachine:
         self.add_transition(State.FREE_KICK, State.RUN, Command.PASS_10_SECONDS)
         self.add_transition(State.FREE_KICK, State.RUN, Command.BALL_MOVED)
 
-        # self.add_transition(State.RUN, State.STOP, Command.STOP)
+        self.add_transition(State.RUN, State.STOP, Command.STOP)
 
     def add_transition(self, from_state: State, to_state: State, transition: Command) -> None:
         """Add new transition from state"""

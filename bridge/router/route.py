@@ -148,7 +148,7 @@ class Route:
 
         cur_vel = robot.get_vel()
 
-        if robot.r_id == 1:
+        if 0 <= robot.r_id <= 2:
             dist = self.get_length(field)
         else:
             dist = self.get_length()

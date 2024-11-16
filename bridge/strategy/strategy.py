@@ -516,6 +516,7 @@ class Strategy:
             wp_type = wp.WType.S_BALL_KICK_UP
         else:
             wp_type = wp.WType.S_BALL_KICK
+        wp_type = wp.WType.S_BALL_KICK
         print(field.polarity)
         waypoints[const.PENALTY_KICKER] = wp.Waypoint(field.ball.get_pos(), fld.gate_angle_size(field.ball.get_pos(), field)[0], wp_type)
 

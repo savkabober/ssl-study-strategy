@@ -133,7 +133,7 @@ class SSLController(BaseProcessor):
         """Get referee commands"""
         cur_cmd = self.get_last_referee_command()
         cur_state, cur_active = self.state_machine.get_state()
-        # cur_state = state_machine.State.STOP
+        # cur_state = state_machine.State.TIMEOUT
         # cur_active = self.field.ally_color
         self.strategy.change_game_state(cur_state, cur_active)
         avoid_ball = False
@@ -170,8 +170,11 @@ class SSLController(BaseProcessor):
             self.field.be_slow = True
         else:
             self.field.be_slow = False
-
-        self.router.put_state(avoid_ball, dont_touch, avoid_enemy_half, we_active)
+        
+        if cur_state == state_machine.State.TIMEOUT:
+            self.router.put_state(False, False, False, True)
+        else:
+            self.router.put_state(avoid_ball, dont_touch, avoid_enemy_half, we_active)
 
         if cur_cmd.state != self.cur_cmd_state:
             self.state_machine.make_transition(cur_cmd.state)
