@@ -85,6 +85,8 @@ class Field:
 
         self.ally_color = const.COLOR
 
+        self.be_slow = False
+
         if self.ally_color == const.Color.BLUE:
             self.polarity = const.POLARITY * -1
         else:

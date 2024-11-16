@@ -1,11 +1,10 @@
 """код состояний игры"""
 import math
+import time
 
-import bridge.const as const
+from bridge import const
 import bridge.router.waypoint as wp
 from bridge.auxiliary import aux, fld
-from bridge.strategy.easy_strategy import attacker, goalkeeper
-import time
 
 def halt(field: fld.Field, waypoints: list[wp.Waypoint]) -> None:  # TODO: проверить что роботы останавливаются на самом деле
     """Пауза по команде от судей"""

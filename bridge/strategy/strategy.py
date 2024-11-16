@@ -93,7 +93,6 @@ class Strategy:
             waypoints.append(wp.Waypoint(field.allies[i].get_pos(), field.allies[i].get_angle(), wp.WType.S_STOP))
         if self.game_status == GameStates.RUN:
             self.run(field, waypoints)
-            # waypoints[1] = wp.Waypoint(aux.Point(1000,1000),0,wp.WType.S_SLOWDOWN)
         else:
             if self.game_status == GameStates.TIMEOUT:
                 refs.timeout(field, waypoints)

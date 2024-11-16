@@ -182,8 +182,13 @@ class Route:
 
         angle0 = aux.lerp(lerp_angles[0], lerp_angles[1], aux.minmax((dist - 100) / 1000, 0, 1))
 
-        robot.pos_reg_x.select_mode(tau.Mode.NORMAL)
-        robot.pos_reg_y.select_mode(tau.Mode.NORMAL)
+        if not field.be_slow:
+            be_slow = -1
+        else:
+            be_slow = const.MAX_STOP_SPEED
+
+        robot.pos_reg_x.select_mode(tau.Mode.NORMAL, be_slow)
+        robot.pos_reg_y.select_mode(tau.Mode.NORMAL, be_slow)
 
         # if robot.r_id == 1:
         #     print(dist)
@@ -202,8 +207,8 @@ class Route:
             ]
         ) and (robot.get_pos() - end_point.pos).mag() < 350:
             # print("aaa")
-            robot.pos_reg_x.select_mode(tau.Mode.SOFT)
-            robot.pos_reg_y.select_mode(tau.Mode.SOFT)
+            robot.pos_reg_x.select_mode(tau.Mode.SOFT, be_slow)
+            robot.pos_reg_y.select_mode(tau.Mode.SOFT, be_slow)
 
             if end_point.type == wp.WType.S_BALL_GO:
                 angle0 = end_point.angle
@@ -259,9 +264,6 @@ class Route:
             #     print(target_point.type, transl_vel, target_point.pos)
                 # field.image.draw_dot(target_point.pos, (0, 0, 0), 100)
             angle0 = end_point.angle
-            if target_point.type == wp.WType.S_SLOWDOWN:
-                if transl_vel.mag() >= const.MAX_STOP_SPEED:
-                    transl_vel = transl_vel.unity() * const.MAX_STOP_SPEED
 
         aerr = aux.wind_down_angle(angle0 - robot.get_angle())
 

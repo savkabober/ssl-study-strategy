@@ -28,21 +28,14 @@ class Router:
         self.__we_active = False
         self.__dont_touch = False
 
-    def avoid_ball(self, state: bool = True, dont_touh: bool = False) -> None:
+    def put_state(self, avoid_ball: bool, dont_touch: bool, avoid_enemy_half: bool, we_active: bool) -> None:
         """
-        Stop game state
+        Put states from referee to router
         """
-        self.__avoid_ball = state
-        self.__dont_touch = dont_touh
-        # print(dont_touh)
-
-    def avoid_enemy_half(self, state: bool = True, we_active: bool = False) -> None:
-        """
-        Kickoff
-        """
-        self.__avoid_enemy_half = state
+        self.__avoid_ball = avoid_ball
+        self.__dont_touch = dont_touch
+        self.__avoid_enemy_half = avoid_enemy_half
         self.__we_active = we_active
-        # print(we_active)
 
     def update(self, field: fld.Field) -> None:
         """

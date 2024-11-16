@@ -32,7 +32,7 @@ DELTA_ANGLE = 0.15
 K_VEL = 1
 TRUE_ANGLE = 0.15
 K_PASS = [8, 350, 0.001, 0.002]
-PASS_PS = [45, 30, 6]
+PASS_PS = [45, 30]
 # Примерные скорости робота и мяча для расчета погрешности
 DEFENSE_TIME = 0.5
 
@@ -91,8 +91,8 @@ Ts = 0.05  # s
 # MAX_SPEED_R = 50
 # ACCELERATION = 3
 # BASE_KICKER_VOLTAGE = 7.0
-MAX_SPEED = 750
-MAX_STOP_SPEED = 750
+MAX_SPEED = 1250
+MAX_STOP_SPEED = 2250
 MAX_SPEED_R = 45
 SOFT_MAX_SPEED = 500
 SOFT_MAX_SPEED_R = 16
